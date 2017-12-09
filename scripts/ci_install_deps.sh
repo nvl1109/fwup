@@ -1,10 +1,10 @@
 #!/bin/bash
 
 #
-# Install dependencies on Travis
+# Install dependencies on CircleCi
 #
 # Inputs:
-#    TRAVIS_OS_NAME - "linux" or "osx"
+#    CIRCLE_OS_NAME - "linux" or "osx"
 #    BUILD_STATIC   - "true" or "false"
 #
 # Static builds use scripts to download libarchive, libconfuse, and libsodium,
@@ -17,7 +17,7 @@ set -v
 source scripts/third_party_versions.sh
 
 MAKE_FLAGS=-j4
-if [[ "$TRAVIS_OS_NAME" = "linux" ]]; then
+if [[ "$CIRCLE_OS_NAME" = "linux" ]]; then
     DEPS_INSTALL_DIR=/usr
 else
     DEPS_INSTALL_DIR=/usr/local
@@ -29,7 +29,7 @@ install_confuse() {
     pushd confuse-$CONFUSE_VERSION
     ./configure --prefix=$DEPS_INSTALL_DIR --disable-examples
     make $MAKE_FLAGS
-    sudo make install
+    make install
     popd
 }
 
@@ -39,33 +39,33 @@ install_sodium() {
     pushd libsodium-$LIBSODIUM_VERSION
     ./configure --prefix=$DEPS_INSTALL_DIR
     make $MAKE_FLAGS
-    sudo make install
+    make install
     popd
 }
 
-if [[ "$TRAVIS_OS_NAME" = "linux" ]]; then
-    sudo apt-get update -qq
-    sudo apt-get install -qq autopoint mtools unzip zip help2man
+if [[ "$CIRCLE_OS_NAME" = "linux" ]]; then
+    apt-get update -qq
+    apt-get install -qq autopoint dosfstools mtools unzip zip help2man autoconf build-essential libtool curl pkg-config mtools unzip zip help2man ca-certificates
     case $MODE in
         windows)
-            sudo dpkg --add-architecture i386
-            sudo apt-get update
-            sudo apt-get install -qq gcc-mingw-w64-x86-64 wine
+            dpkg --add-architecture i386
+            apt-get update
+            apt-get install -qq gcc-mingw-w64-x86-64 wine
             ;;
         singlethread|dynamic)
-            sudo apt-get install -qq libarchive-dev
+            apt-get install -qq libarchive-dev python-pip python-dev
             install_confuse
             install_sodium
             pip install --user cpp-coveralls
             ;;
         static)
             # Need fpm when building static so that we can make the .deb and .rpm packages
-            sudo apt-get install -qq rpm
-            gem install fpm
+            apt-get install -qq rpm rubygems ruby-dev 
+            gem install fpm --no-ri --no-rdoc
             ;;
         raspberrypi)
-            sudo apt-get install -qq libarchive-dev qemu binfmt-support qemu-user-static
-            gem install fpm
+            apt-get install -qq libarchive-dev qemu binfmt-support qemu-user-static rubygems ruby-dev rpm
+            gem install fpm --no-ri --no-rdoc
             pushd ~
             git clone https://github.com/raspberrypi/tools.git --depth 1
             popd
