@@ -61,7 +61,9 @@ make -j4 check
 make dist
 
 # Check that the distribution version works by building it again
-tar xf fwup-*.tar.gz
+mkdir distcheck
+cd distcheck
+tar xf ../fwup-*.tar.gz
 cd fwup-*
 if [ "$CIRCLE_OS_NAME" = "linux" ]; then
     ./configure;
@@ -70,5 +72,4 @@ else
 fi
 make -j4
 make -j4 check
-
-
+cd ../..
