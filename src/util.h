@@ -27,11 +27,11 @@ struct tm;
 
 int timestamp_to_tm(const char *timestamp, struct tm *tmp);
 void time_t_to_string(time_t t, char *str, size_t len);
-const char *get_creation_timestamp();
-time_t get_creation_time_t();
+const char *get_creation_timestamp(void);
+time_t get_creation_time_t(void);
 
 void set_last_error(const char *fmt, ...);
-const char *last_error();
+const char *last_error(void);
 
 int hex_to_bytes(const char *str, uint8_t *bytes, size_t maxbytes);
 int bytes_to_hex(const uint8_t *bytes, char *str, size_t byte_count);
@@ -40,7 +40,7 @@ int archive_filename_to_resource(const char *name, char *result, size_t maxlengt
 
 bool will_be_regular_file(const char *path);
 bool file_exists(const char *path);
-void handshake_exit();
+void handshake_exit(void);
 
 extern bool fwup_verbose;
 

@@ -43,11 +43,11 @@ static int check_resource(struct resource_list *list, const char *file_resource_
     sparse_file_init(&sfm);
     OK_OR_RETURN(sparse_file_get_map_from_resource(item->resource, &sfm));
 
-    size_t expected_length = sparse_file_data_size(&sfm);
-    ssize_t archive_length = archive_entry_size(ae);
+    off_t expected_length = sparse_file_data_size(&sfm);
+    off_t archive_length = archive_entry_size(ae);
     if (archive_length < 0)
         ERR_RETURN("Missing file length in archive for %s", file_resource_name);
-    if ((size_t) archive_length != expected_length)
+    if (archive_length != expected_length)
         ERR_RETURN("Length mismatch for %s", file_resource_name);
 
     char *expected_hash = cfg_getstr(item->resource, "blake2b-256");
@@ -56,19 +56,19 @@ static int check_resource(struct resource_list *list, const char *file_resource_
 
     crypto_generichash_state hash_state;
     crypto_generichash_init(&hash_state, NULL, 0, crypto_generichash_BYTES);
-    size_t length_left = expected_length;
+    off_t length_left = expected_length;
     while (length_left != 0) {
         char buffer[4096];
 
-        size_t to_read = sizeof(buffer);
+        off_t to_read = sizeof(buffer);
         if (to_read > length_left)
             to_read = length_left;
 
-        ssize_t len = archive_read_data(a, buffer, to_read);
+        ssize_t len = archive_read_data(a, buffer, (size_t) to_read);
         if (len <= 0)
             ERR_RETURN("Error reading '%s' in archive", archive_entry_pathname(ae));
 
-        crypto_generichash_update(&hash_state, (const unsigned char*) buffer, len);
+        crypto_generichash_update(&hash_state, (const unsigned char*) buffer, (size_t) len);
         length_left -= len;
     }
 

@@ -347,12 +347,12 @@ int main(int argc, char **argv)
     const char *output_firmware = NULL;
     const char *task = NULL;
     const char *sparse_check = NULL;
-    int sparse_check_size = 4096; // Arbitrary default.
+    size_t sparse_check_size = 4096; // Arbitrary default.
     bool accept_found_device = false;
     unsigned char *signing_key = NULL;
     unsigned char *public_keys[FWUP_MAX_PUBLIC_KEYS + 1] = {NULL};
     int num_public_keys = 0;
-#if __APPLE__
+#if defined(__APPLE__)
     // On hosts, the right behavior for almost all use cases is to eject
     // so that the user can plug the SDCard into their board. Detecting
     // that OSX is a host is easy; Linux, not so much. Luckily, Linux doesn't
@@ -394,7 +394,6 @@ int main(int argc, char **argv)
         case 'D': // --detect
             print_detected_devices();
             exit(EXIT_SUCCESS);
-            break;
         case 'E': // --eject
             eject_on_success = true;
             break;
@@ -413,7 +412,6 @@ int main(int argc, char **argv)
         case 'h':
             print_usage();
             exit(EXIT_SUCCESS);
-            break;
         case 'i':
             input_firmware = optarg;
             easy_mode = false;
@@ -478,22 +476,20 @@ int main(int argc, char **argv)
         case 'z':
             print_selected_device();
             exit(EXIT_SUCCESS);
-            break;
         case '!': // --enable-trim
             enable_trim = true;
             break;
         case '@': // --version
             print_version();
             exit(EXIT_SUCCESS);
-            break;
         case '#': // --no-eject
             eject_on_success = false;
             break;
         case '$': // progress-low
-            progress_low = strtol(optarg, 0, 0);
+            progress_low = (int) strtol(optarg, 0, 0);
             break;
         case '%': // progress-high
-            progress_high = strtol(optarg, 0, 0);
+            progress_high = (int) strtol(optarg, 0, 0);
             break;
         case '1':
         case '2':
@@ -512,7 +508,7 @@ int main(int argc, char **argv)
             easy_mode = false;
             break;
         case '*': // --sparse-check-size
-            sparse_check_size = strtol(optarg, 0, 0);
+            sparse_check_size = strtoul(optarg, 0, 0);
             break;
         case '(': // --private-key
             signing_key = parse_signing_key(optarg, strlen(optarg));
@@ -554,9 +550,8 @@ int main(int argc, char **argv)
             task = "complete";
     }
 
-    if (optind < argc) {
+    if (optind < argc)
         fwup_errx(EXIT_FAILURE, "unexpected parameter: %s", argv[optind]);
-    }
 
     // Normalize the firmware filenames in the case that the user wants
     // to use stdin/stdout
@@ -568,7 +563,6 @@ int main(int argc, char **argv)
     switch (command) {
     case CMD_NONE:
         fwup_errx(EXIT_FAILURE, "specify one of -a, -c, -l, -m, -S, -V, or -z");
-        break;
 
     case CMD_APPLY:
     {
